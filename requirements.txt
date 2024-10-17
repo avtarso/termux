@@ -1,0 +1,7 @@
+psycopg==3.2.1
+psycopg2-binary==2.9.9
+pyaes==1.6.1
+pyasn1==0.6.0
+rsa==4.9
+Telethon==1.36.0
+typing_extensions==4.12.2
