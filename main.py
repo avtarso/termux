@@ -6,8 +6,9 @@ from datetime import datetime
 from telethon import events
 from telethon.sync import TelegramClient
 from telethon.tl.functions.account import UpdateProfileRequest
-from telethon.tl.functions.photos import UploadProfilePhotoRequest
+from telethon.tl.functions.photos import UploadProfilePhotoRequest, DeletePhotosRequest
 from telethon.tl.functions.users import GetFullUserRequest
+from telethon.tl.types import InputPhoto
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
@@ -20,9 +21,16 @@ class TelegramBot:
         self.client = TelegramClient('session_name', api_id, api_hash)
         self.current_status = None
 
-    async def set_status(self, status):
-        file = await self.client.upload_file(status_dict[status]['file'])
+    async def update_profile_photo(self, file):
+        photos = await self.client.get_profile_photos('me')
+        if photos:
+            photos_to_delete = [InputPhoto(id=photo.id, access_hash=photo.access_hash, file_reference=photo.file_reference) for photo in photos[:1]]
+            await self.client(DeletePhotosRequest(id=photos_to_delete)) 
         await self.client(UploadProfilePhotoRequest(file=file))
+
+    async def set_status(self, status):
+        # file = await self.client.upload_file(status_dict[status]['file'])
+        # await self.update_profile_photo(file)
         await self.client(UpdateProfileRequest(about=status_dict[status]['text']))
         self.current_status = status
 
