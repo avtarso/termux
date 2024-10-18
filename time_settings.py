@@ -21,9 +21,9 @@ time_ranges = [
     (time_6, time_7, sleep)
 ]
 
-def get_time_status():
+def get_time_status(default_staus=life):
     current_time = datetime.now().time()
     for start_time, end_time, status in time_ranges:
         if start_time <= current_time < end_time:
             return status
-    return "life"
+    return default_staus
