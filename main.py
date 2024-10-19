@@ -29,8 +29,8 @@ class TelegramBot:
         await self.client(UploadProfilePhotoRequest(file=file))
 
     async def set_status(self, status):
-        # file = await self.client.upload_file(status_dict[status]['file'])
-        # await self.update_profile_photo(file)
+        file = await self.client.upload_file(status_dict[status]['file'])
+        await self.update_profile_photo(file)
         await self.client(UpdateProfileRequest(about=status_dict[status]['text']))
         self.current_status = status
 
@@ -81,6 +81,7 @@ class TelegramBot:
 
         # start time check
         self.client.loop.create_task(self.check_time_status())
+        
         await self.client.run_until_disconnected()
 
 
