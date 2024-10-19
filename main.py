@@ -15,10 +15,11 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import settings
 from options import sleep, life, work, status_dict
 from time_settings import get_time_status
+from sessions import get_session
 
 class TelegramBot:
-    def __init__(self, api_id, api_hash):
-        self.client = TelegramClient('session_name', api_id, api_hash)
+    def __init__(self, api_id, api_hash, session_name):
+        self.client = TelegramClient(session_name, api_id, api_hash)
         self.current_status = None
 
     async def update_profile_photo(self, file):
@@ -45,12 +46,22 @@ class TelegramBot:
             if new_time_status != self.current_status:
                 await self.set_status(new_time_status)
             await asyncio.sleep(60)
+        
+    async def print_status(self):
+        while True:
+            print(f"Time {datetime.now().time().strftime("%H:%M")}, Status - {self.current_status}")
+            await asyncio.sleep(3600)
+
+    def get_setted_status(self, x):
+        for i in status_dict:
+            if status_dict[i]['text'] == x:
+                return i
 
     async def start(self):
         await self.client.start()
         me = await self.client.get_me()
         full = await self.client(GetFullUserRequest(me.username))
-        self.current_status = full.full_user.about
+        self.current_status = self.get_setted_status(full.full_user.about)
 
         print("Status check started!")
 
@@ -81,10 +92,13 @@ class TelegramBot:
 
         # start time check
         self.client.loop.create_task(self.check_time_status())
+
+        self.client.loop.create_task(self.print_status())
         
         await self.client.run_until_disconnected()
 
 
 if __name__ == '__main__':
-    bot = TelegramBot(settings.API_ID, settings.API_HASH)
+    session_name = get_session()
+    bot = TelegramBot(settings.API_ID, settings.API_HASH, session_name)
     asyncio.run(bot.start())
