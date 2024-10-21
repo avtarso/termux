@@ -22,6 +22,9 @@ class TelegramBot:
         self.client = TelegramClient(session_name, api_id, api_hash)
         self.current_status = None
 
+    def print_status(self, add_text=""):
+        print(f"{add_text}{datetime.now().time().strftime("%H:%M")} - {self.current_status}")    
+
     async def update_profile_photo(self, file):
         photos = await self.client.get_profile_photos('me')
         if photos:
@@ -34,6 +37,7 @@ class TelegramBot:
         await self.update_profile_photo(file)
         await self.client(UpdateProfileRequest(about=status_dict[status]['text']))
         self.current_status = status
+        self.print_status(self, "Changed. ")
 
     async def result_and_clear(self, event, status):
         result = await event.respond(f'Status "{status}" set!')
@@ -46,10 +50,10 @@ class TelegramBot:
             if new_time_status != self.current_status:
                 await self.set_status(new_time_status)
             await asyncio.sleep(60)
-        
-    async def print_status(self):
+       
+    async def continuous_print_status(self):
         while True:
-            print(f"Time {datetime.now().time().strftime("%H:%M")}, Status - {self.current_status}")
+            self.print_status()
             await asyncio.sleep(3600)
 
     def get_setted_status(self, x):
@@ -65,27 +69,28 @@ class TelegramBot:
 
         print("Status check started!")
 
-        @self.client.on(events.NewMessage(outgoing=True, pattern='!time'))
+        @self.client.on(events.NewMessage(outgoing=True, pattern='!check'))
         async def handler(event):
-            m = await event.respond(f'!pong {datetime.now().time().isoformat(timespec="minutes")}')
+            self.print_status("Checked. ")
+            m = await event.respond(f'Check - {datetime.now().time().isoformat(timespec="minutes")} - {self.current_status}')
             await asyncio.sleep(5)
             await self.client.delete_messages(event.chat_id, [event.id, m.id])
 
-        @self.client.on(events.NewMessage(outgoing=True, pattern='!ex'))
+        @self.client.on(events.NewMessage(outgoing=True, pattern='!exit'))
         async def handler(event):
             await self.client.disconnect()
 
-        @self.client.on(events.NewMessage(outgoing=True, pattern='!pf1'))
+        @self.client.on(events.NewMessage(outgoing=True, pattern='!work'))
         async def handler(event):
             await self.set_status(work)
             await self.result_and_clear(event, work)
         
-        @self.client.on(events.NewMessage(outgoing=True, pattern='!pf2'))
+        @self.client.on(events.NewMessage(outgoing=True, pattern='!life'))
         async def handler(event):
             await self.set_status(life)
             await self.result_and_clear(event, life)
 
-        @self.client.on(events.NewMessage(outgoing=True, pattern='!pf3'))
+        @self.client.on(events.NewMessage(outgoing=True, pattern='!sleep'))
         async def handler(event):
             await self.set_status(sleep)
             await self.result_and_clear(event, sleep)
@@ -93,7 +98,8 @@ class TelegramBot:
         # start time check
         self.client.loop.create_task(self.check_time_status())
 
-        self.client.loop.create_task(self.print_status())
+        # start print status
+        self.client.loop.create_task(self.continuous_print_status())
         
         await self.client.run_until_disconnected()
 
