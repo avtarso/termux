@@ -23,7 +23,7 @@ class TelegramBot:
         self.current_status = None
 
     def print_status(self, add_text=""):
-        print(f"{add_text}{datetime.now().time().strftime("%H:%M")} - {self.current_status}")    
+        print(f'{add_text}{datetime.now().time().strftime("%H:%M")} - {self.current_status}')    
 
     async def update_profile_photo(self, file):
         photos = await self.client.get_profile_photos('me')
