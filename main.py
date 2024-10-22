@@ -37,7 +37,7 @@ class TelegramBot:
         await self.update_profile_photo(file)
         await self.client(UpdateProfileRequest(about=status_dict[status]['text']))
         self.current_status = status
-        self.print_status(self, "Changed. ")
+        self.print_status("Changed. ")
 
     async def result_and_clear(self, event, status):
         result = await event.respond(f'Status "{status}" set!')
@@ -56,9 +56,9 @@ class TelegramBot:
             self.print_status()
             await asyncio.sleep(3600)
 
-    def get_setted_status(self, x):
+    def get_setted_status(self, bio_text):
         for i in status_dict:
-            if status_dict[i]['text'] == x:
+            if status_dict[i]['text'] == bio_text:
                 return i
 
     async def start(self):
